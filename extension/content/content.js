@@ -30,23 +30,26 @@
     }
 
     async _init() {
+      // Capture hash immediately before SPA routing can strip it
+      const initialHash = window.location.hash;
+
       await this._loadSettings();
       this._buildUI();
       this._pollForVideo();
       this._listenExtension();
 
-      // Auto-join if URL has #wpjoin=CODE
-      const hash = window.location.hash;
-      if (hash.startsWith('#wpjoin=')) {
-        const code = hash.split('=')[1];
+      // Auto-join if URL had #wpjoin=CODE
+      if (initialHash.startsWith('#wpjoin=')) {
+        const code = initialHash.split('=')[1];
         if (code) {
+          // Clear the hash from URL
+          window.history.replaceState('', document.title, window.location.pathname + window.location.search);
           this._toggleSidebar();
           this.el.roomInput.value = code;
-          window.history.replaceState('', document.title, window.location.pathname + window.location.search);
           setTimeout(() => {
             const joinBtn = this.el.sidebar.querySelector('#wp-join');
             if (joinBtn) joinBtn.click();
-          }, 500);
+          }, 300);
         }
       }
     }
@@ -76,6 +79,10 @@
           this.video = best;
           this._attachVideoEvents();
           this._setStatus('Video detected ✓');
+          if (this.pendingSync) {
+            this._applySync(this.pendingSync);
+            this.pendingSync = null;
+          }
         }
       };
       find();
@@ -190,7 +197,10 @@
     /* ── Video Sync ──────────────────────────────── */
 
     _applySync(d) {
-      if (!this.video) return;
+      if (!this.video) {
+        this.pendingSync = d;
+        return;
+      }
       this.ignoreEvents = true;
       if (Math.abs(this.video.currentTime - d.time) > SYNC_THRESHOLD)
         this.video.currentTime = d.time;
@@ -202,15 +212,26 @@
 
     /* ── WebRTC ───────────────────────────────────── */
 
-    async _startLocalMedia() {
-      if (this.localStream) return;
-      try {
-        this.localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-        this.el.localVid.srcObject = this.localStream;
-        this._setStatus('Camera & mic ready');
-      } catch {
-        this._setStatus('Camera/Mic unavailable – check site permissions');
-      }
+    _startLocalMedia() {
+      if (this.localStream) return Promise.resolve(this.localStream);
+      if (this.mediaPromise) return this.mediaPromise;
+
+      this.mediaPromise = navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+        .then((stream) => {
+          this.localStream = stream;
+          this.el.localVid.srcObject = stream;
+          if (this.miniMode && this.el.miniLocalVid) {
+            this.el.miniLocalVid.srcObject = stream;
+          }
+          this._setStatus('Camera & mic ready');
+          return stream;
+        })
+        .catch((err) => {
+          this._setStatus('Camera/Mic unavailable – check permissions');
+          return null;
+        });
+      
+      return this.mediaPromise;
     }
 
     async _startWebRTC(initiator) {
@@ -220,18 +241,9 @@
       ]};
       this.pc = new RTCPeerConnection(cfg);
 
-      // Use the already-acquired local stream
-      if (this.localStream) {
-        this.localStream.getTracks().forEach((t) => this.pc.addTrack(t, this.localStream));
-      } else {
-        // Fallback: acquire media now if not already done
-        try {
-          this.localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-          this.el.localVid.srcObject = this.localStream;
-          this.localStream.getTracks().forEach((t) => this.pc.addTrack(t, this.localStream));
-        } catch {
-          this._setStatus('Camera/Mic unavailable');
-        }
+      const stream = await this._startLocalMedia();
+      if (stream) {
+        stream.getTracks().forEach((t) => this.pc.addTrack(t, stream));
       }
 
       this.pc.ontrack = (e) => { this.el.remoteVid.srcObject = e.streams[0]; };
