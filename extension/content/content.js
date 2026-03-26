@@ -159,6 +159,13 @@
           this.el.remoteLabel.textContent = d.username || 'Partner';
           this._addChat(d.username + ' joined the party', 'system');
           this._startWebRTC(true);
+          if (this.isHost && this.video) {
+            this._send({ 
+              type: 'sync', 
+              action: this.video.paused ? 'pause' : 'play', 
+              time: this.video.currentTime 
+            });
+          }
           break;
         case 'peer-left':
           this._setStatus('Partner left');
