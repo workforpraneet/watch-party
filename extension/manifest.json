@@ -5,13 +5,7 @@
   "description": "Watch videos together with sync & video/audio chat",
   "permissions": ["storage", "activeTab"],
   "host_permissions": [
-    "*://*.netflix.com/*",
-    "*://*.hotstar.com/*",
-    "*://*.jiohotstar.com/*",
-    "*://*.primevideo.com/*",
-    "*://*.amazon.com/*",
-    "*://*.youtube.com/*",
-    "*://*.zee5.com/*"
+    "<all_urls>"
   ],
   "background": {
     "service_worker": "background/service-worker.js"
@@ -19,13 +13,7 @@
   "content_scripts": [
     {
       "matches": [
-        "*://*.netflix.com/*",
-        "*://*.hotstar.com/*",
-        "*://*.jiohotstar.com/*",
-        "*://*.primevideo.com/*",
-        "*://*.amazon.com/*",
-        "*://*.youtube.com/*",
-        "*://*.zee5.com/*"
+        "<all_urls>"
       ],
       "js": ["content/content.js"],
       "css": ["content/content.css"],

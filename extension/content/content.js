@@ -5,7 +5,7 @@
 
   const SYNC_THRESHOLD = 0.5;
   const VIDEO_POLL_MS = 2000;
-  const SERVER_URL = 'ws://localhost:3000'; // ← Change this when deploying
+  const SERVER_URL = 'wss://watch-party-production-ecaa.up.railway.app'; // Railway deployed server
 
   class WatchParty {
     constructor() {
