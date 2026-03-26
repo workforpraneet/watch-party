@@ -14,16 +14,22 @@
     <p class="tagline">Watch together, stay connected.</p>
 
     <div class="section">
-      <label>Server URL</label>
-      <input type="text" id="server-url" placeholder="ws://localhost:3000">
-    </div>
-
-    <div class="section">
       <label>Your Name</label>
       <input type="text" id="username" placeholder="Enter your name">
     </div>
 
-    <button id="save-btn" class="btn-save">Save Settings</button>
+    <button id="save-btn" class="btn-save">Save Name</button>
+
+    <div class="divider" style="margin: 16px 0;"></div>
+
+    <div class="section">
+      <label>Join a Party</label>
+      <div style="display: flex; gap: 8px;">
+        <input type="text" id="room-code" placeholder="Room Code">
+        <button id="join-btn" class="btn-save" style="width: auto; padding: 0 16px;">Join</button>
+      </div>
+    </div>
+
     <div id="status" class="status"></div>
 
     <div class="divider"></div>

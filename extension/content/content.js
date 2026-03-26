@@ -34,6 +34,21 @@
       this._buildUI();
       this._pollForVideo();
       this._listenExtension();
+
+      // Auto-join if URL has #wpjoin=CODE
+      const hash = window.location.hash;
+      if (hash.startsWith('#wpjoin=')) {
+        const code = hash.split('=')[1];
+        if (code) {
+          this._toggleSidebar();
+          this.el.roomInput.value = code;
+          window.history.replaceState('', document.title, window.location.pathname + window.location.search);
+          setTimeout(() => {
+            const joinBtn = this.el.sidebar.querySelector('#wp-join');
+            if (joinBtn) joinBtn.click();
+          }, 500);
+        }
+      }
     }
 
     _loadSettings() {
@@ -98,7 +113,11 @@
       this.ws.onopen = () => {
         this._setStatus('Connected');
         if (action === 'create') {
-          this._send({ type: 'create-room', username: this.username });
+          this._send({ 
+            type: 'create-room', 
+            username: this.username,
+            pageUrl: window.location.href.split('#')[0] 
+          });
         } else {
           const code = this.el.roomInput.value.trim().toUpperCase();
           if (!code) { this._setStatus('Enter room code'); return; }

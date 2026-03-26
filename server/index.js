@@ -8,7 +8,7 @@ const server = http.createServer((req, res) => {
 
 const wss = new WebSocketServer({ server });
 
-const rooms = new Map(); // roomId -> Set<ws>
+const rooms = new Map(); // roomId -> { members: Set<ws>, pageUrl: string }
 
 function genCode() {
   return Math.random().toString(36).substring(2, 8).toUpperCase();
@@ -18,7 +18,7 @@ function broadcast(roomId, msg, exclude) {
   const room = rooms.get(roomId);
   if (!room) return;
   const data = JSON.stringify(msg);
-  room.forEach((client) => {
+  room.members.forEach((client) => {
     if (client !== exclude && client.readyState === 1) {
       client.send(data);
     }
@@ -42,7 +42,10 @@ wss.on('connection', (ws) => {
         const roomId = genCode();
         ws.roomId = roomId;
         ws.username = msg.username || 'Host';
-        rooms.set(roomId, new Set([ws]));
+        rooms.set(roomId, {
+          members: new Set([ws]),
+          pageUrl: msg.pageUrl || ''
+        });
         ws.send(JSON.stringify({ type: 'room-created', roomId }));
         console.log(`Room ${roomId} created by ${ws.username}`);
         break;
@@ -56,7 +59,7 @@ wss.on('connection', (ws) => {
         }
         ws.roomId = rid;
         ws.username = msg.username || 'Guest';
-        rooms.get(rid).add(ws);
+        rooms.get(rid).members.add(ws);
         ws.send(JSON.stringify({ type: 'room-joined', roomId: rid }));
         broadcast(rid, {
           type: 'peer-joined',
@@ -64,6 +67,17 @@ wss.on('connection', (ws) => {
           username: ws.username
         }, ws);
         console.log(`${ws.username} joined room ${rid}`);
+        break;
+      }
+
+      case 'get-room-info': {
+        const qid = (msg.roomId || '').toUpperCase();
+        const roomData = rooms.get(qid);
+        if (!roomData) {
+          ws.send(JSON.stringify({ type: 'room-info', found: false, roomId: qid }));
+        } else {
+          ws.send(JSON.stringify({ type: 'room-info', found: true, roomId: qid, pageUrl: roomData.pageUrl }));
+        }
         break;
       }
 
@@ -85,8 +99,8 @@ wss.on('connection', (ws) => {
   ws.on('close', () => {
     if (ws.roomId && rooms.has(ws.roomId)) {
       const room = rooms.get(ws.roomId);
-      room.delete(ws);
-      if (room.size === 0) {
+      room.members.delete(ws);
+      if (room.members.size === 0) {
         rooms.delete(ws.roomId);
         console.log(`Room ${ws.roomId} deleted (empty)`);
       } else {
