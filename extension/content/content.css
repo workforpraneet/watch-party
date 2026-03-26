@@ -1,0 +1,15 @@
+/* Page-level styles (outside shadow DOM) */
+body.watchparty-sidebar-open {
+  margin-right: 340px !important;
+  transition: margin-right 0.3s ease !important;
+}
+
+#watchparty-root {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 0;
+  height: 0;
+  overflow: visible;
+  z-index: 2147483647;
+}

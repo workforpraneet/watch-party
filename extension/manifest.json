@@ -1,0 +1,44 @@
+{
+  "manifest_version": 3,
+  "name": "WatchParty",
+  "version": "1.0.0",
+  "description": "Watch videos together with sync & video/audio chat",
+  "permissions": ["storage", "activeTab"],
+  "host_permissions": [
+    "*://*.netflix.com/*",
+    "*://*.hotstar.com/*",
+    "*://*.jiohotstar.com/*",
+    "*://*.primevideo.com/*",
+    "*://*.amazon.com/*",
+    "*://*.youtube.com/*",
+    "*://*.zee5.com/*"
+  ],
+  "background": {
+    "service_worker": "background/service-worker.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.netflix.com/*",
+        "*://*.hotstar.com/*",
+        "*://*.jiohotstar.com/*",
+        "*://*.primevideo.com/*",
+        "*://*.amazon.com/*",
+        "*://*.youtube.com/*",
+        "*://*.zee5.com/*"
+      ],
+      "js": ["content/content.js"],
+      "css": ["content/content.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "WatchParty"
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

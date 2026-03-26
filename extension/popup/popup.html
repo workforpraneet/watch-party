@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="popup">
+    <div class="header">
+      <span class="logo">🎬</span>
+      <h1>WatchParty</h1>
+    </div>
+
+    <p class="tagline">Watch together, stay connected.</p>
+
+    <div class="section">
+      <label>Server URL</label>
+      <input type="text" id="server-url" placeholder="ws://localhost:3000">
+    </div>
+
+    <div class="section">
+      <label>Your Name</label>
+      <input type="text" id="username" placeholder="Enter your name">
+    </div>
+
+    <button id="save-btn" class="btn-save">Save Settings</button>
+    <div id="status" class="status"></div>
+
+    <div class="divider"></div>
+
+    <div class="supported">
+      <h3>Supported Platforms</h3>
+      <div class="platforms">
+        <span class="chip">Netflix</span>
+        <span class="chip">JioHotstar</span>
+        <span class="chip">Prime Video</span>
+        <span class="chip">YouTube</span>
+        <span class="chip">Zee5</span>
+      </div>
+    </div>
+
+    <p class="hint">Open a streaming site and click the <strong>🎬</strong> button to start a party!</p>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>
