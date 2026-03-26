@@ -48,7 +48,8 @@ document.addEventListener('DOMContentLoaded', () => {
           if (data.found && data.pageUrl) {
             status.textContent = 'Found! Redirecting...';
             status.style.color = '#4ecca3';
-            chrome.tabs.create({ url: data.pageUrl + '#wpjoin=' + code });
+            const separator = data.pageUrl.includes('?') ? '&' : '?';
+            chrome.tabs.create({ url: data.pageUrl + separator + 'wpjoin=' + code });
           } else {
             status.textContent = 'Room not found (or no URL)';
             status.style.color = '#e94560';

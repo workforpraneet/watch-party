@@ -30,27 +30,33 @@
     }
 
     async _init() {
-      // Capture hash immediately before SPA routing can strip it
+      // Check query params to avoid SPA hash trimming, with fallback to hash
+      const urlParams = new URLSearchParams(window.location.search);
+      let autoJoinCode = urlParams.get('wpjoin');
+      
       const initialHash = window.location.hash;
+      if (!autoJoinCode && initialHash.startsWith('#wpjoin=')) {
+        autoJoinCode = initialHash.split('=')[1];
+      }
 
       await this._loadSettings();
       this._buildUI();
       this._pollForVideo();
       this._listenExtension();
 
-      // Auto-join if URL had #wpjoin=CODE
-      if (initialHash.startsWith('#wpjoin=')) {
-        const code = initialHash.split('=')[1];
-        if (code) {
-          // Clear the hash from URL
-          window.history.replaceState('', document.title, window.location.pathname + window.location.search);
-          this._toggleSidebar();
-          this.el.roomInput.value = code;
-          setTimeout(() => {
-            const joinBtn = this.el.sidebar.querySelector('#wp-join');
-            if (joinBtn) joinBtn.click();
-          }, 300);
-        }
+      if (autoJoinCode) {
+        // Clean URL to remove the code without reloading
+        const cleanUrl = new URL(window.location.href);
+        cleanUrl.searchParams.delete('wpjoin');
+        if (cleanUrl.hash.startsWith('#wpjoin=')) cleanUrl.hash = '';
+        window.history.replaceState('', document.title, cleanUrl.toString());
+
+        this._toggleSidebar();
+        this.el.roomInput.value = autoJoinCode;
+        setTimeout(() => {
+          const joinBtn = this.el.sidebar.querySelector('#wp-join');
+          if (joinBtn) joinBtn.click();
+        }, 300);
       }
     }
 
