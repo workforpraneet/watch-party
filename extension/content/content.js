@@ -30,34 +30,49 @@
     }
 
     async _init() {
-      // Check query params to avoid SPA hash trimming, with fallback to hash
-      const urlParams = new URLSearchParams(window.location.search);
-      let autoJoinCode = urlParams.get('wpjoin');
-      
-      const initialHash = window.location.hash;
-      if (!autoJoinCode && initialHash.startsWith('#wpjoin=')) {
-        autoJoinCode = initialHash.split('=')[1];
-      }
-
       await this._loadSettings();
       this._buildUI();
       this._pollForVideo();
       this._listenExtension();
 
-      if (autoJoinCode) {
-        // Clean URL to remove the code without reloading
-        const cleanUrl = new URL(window.location.href);
-        cleanUrl.searchParams.delete('wpjoin');
-        if (cleanUrl.hash.startsWith('#wpjoin=')) cleanUrl.hash = '';
-        window.history.replaceState('', document.title, cleanUrl.toString());
+      // Check storage first (bypasses all SPA router url-stripping issues)
+      chrome.storage.local.get(['wp_pending_join'], (d) => {
+        let codeToJoin = null;
+        
+        const p = d.wp_pending_join;
+        // Valid for 10 seconds to prevent accidental joins on future tabs
+        if (p && Date.now() - p.timestamp < 10000) {
+          chrome.storage.local.remove('wp_pending_join');
+          codeToJoin = p.code;
+        }
 
-        this._toggleSidebar();
-        this.el.roomInput.value = autoJoinCode;
-        setTimeout(() => {
-          const joinBtn = this.el.sidebar.querySelector('#wp-join');
-          if (joinBtn) joinBtn.click();
-        }, 300);
-      }
+        // Fallback for manually shared links
+        if (!codeToJoin) {
+          const urlParams = new URLSearchParams(window.location.search);
+          codeToJoin = urlParams.get('wpjoin');
+          
+          const hash = window.location.hash;
+          if (!codeToJoin && hash.startsWith('#wpjoin=')) {
+            codeToJoin = hash.split('=')[1];
+          }
+
+          if (codeToJoin) {
+            const cleanUrl = new URL(window.location.href);
+            cleanUrl.searchParams.delete('wpjoin');
+            if (cleanUrl.hash.startsWith('#wpjoin=')) cleanUrl.hash = '';
+            window.history.replaceState('', document.title, cleanUrl.toString());
+          }
+        }
+
+        if (codeToJoin) {
+          this._toggleSidebar();
+          this.el.roomInput.value = codeToJoin;
+          setTimeout(() => {
+            const joinBtn = this.el.sidebar.querySelector('#wp-join');
+            if (joinBtn) joinBtn.click();
+          }, 300);
+        }
+      });
     }
 
     _loadSettings() {
