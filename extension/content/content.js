@@ -98,6 +98,7 @@
         }
         if (best && best !== this.video) {
           this.video = best;
+          this.el.fab.style.display = 'flex';
           this._attachVideoEvents();
           this._setStatus('Video detected ✓');
           if (this.pendingSync) {
@@ -527,7 +528,7 @@
       return `
 *{margin:0;padding:0;box-sizing:border-box}
 :host{position:fixed;top:0;right:0;z-index:2147483647;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:13px;color:#eee}
-.wp-fab{position:fixed;right:20px;bottom:20px;width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,#e94560,#c0392b);color:#fff;border:none;font-size:24px;cursor:pointer;box-shadow:0 4px 18px rgba(233,69,96,.45);transition:all .3s ease;display:flex;align-items:center;justify-content:center;z-index:2147483647}
+.wp-fab{position:fixed;right:20px;bottom:20px;width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,#e94560,#c0392b);color:#fff;border:none;font-size:24px;cursor:pointer;box-shadow:0 4px 18px rgba(233,69,96,.45);transition:all .3s ease;display:none;align-items:center;justify-content:center;z-index:2147483647}
 .wp-fab:hover{transform:scale(1.12);box-shadow:0 6px 24px rgba(233,69,96,.6)}
 .wp-fab-shift{right:360px}
 .wp-sidebar{position:fixed;top:0;right:0;width:340px;height:100vh;background:#12121f;border-left:1px solid #2a2a40;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);z-index:2147483646;overflow:hidden}
